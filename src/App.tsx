@@ -6,6 +6,7 @@ import MapView from "./components/MapView";
 import FavoritesView from "./components/FavoritesView";
 import HistoryView from "./components/HistoryView";
 import AddCityModal from "./components/AddCityModal";
+import { getClientFallbackData } from "./fallbackData";
 
 // Stock high-res fallbacks for categories if needed
 const categoryImages: { [key: string]: string } = {
@@ -38,6 +39,7 @@ export default function App() {
 
   const fetchCityWeather = async (cityName: string, addToHistory = true): Promise<boolean> => {
     setLoading(true);
+    let data: CityWeatherData;
     try {
       const res = await fetch("/api/weather", {
         method: "POST",
@@ -45,9 +47,16 @@ export default function App() {
         body: JSON.stringify({ city: cityName }),
       });
       if (!res.ok) {
-        throw new Error("Failed to fetch weather data");
+        throw new Error(`Failed to fetch weather data: status ${res.status}`);
       }
-      const data: CityWeatherData = await res.json();
+      data = await res.json();
+    } catch (err) {
+      console.warn("Backend API `/api/weather` failed or unavailable. Falling back to local high-fidelity generator.", err);
+      // Client-side fallback for static deployment platforms like Vercel
+      data = getClientFallbackData(cityName);
+    }
+
+    try {
       setCityData(data);
       setAlertClosed(false);
 
@@ -60,8 +69,8 @@ export default function App() {
         ]);
       }
       return true;
-    } catch (err) {
-      console.error("Error fetching city weather:", err);
+    } catch (innerErr) {
+      console.error("Error setting state for city data:", innerErr);
       return false;
     } finally {
       setLoading(false);
