@@ -1,0 +1,6 @@
+{
+  "name": "City Explorer",
+  "description": "A comprehensive local weather and tourism dashboard providing real-time weather analytics, active weather alerts, and top tourist attraction statuses using the Gemini API.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
